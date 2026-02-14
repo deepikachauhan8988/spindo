@@ -12,6 +12,8 @@ import {
 
 
 import Home from "./componets/pages/Home";
+import AdminDashBoard from "./componets/admin_dashboard/AdminDashBoard";
+
 // import Footer from "./componets/footer/Footer";
 // import NavBar from "./componets/navbar/NavBar";
 
@@ -22,7 +24,7 @@ function App() {
   const location = useLocation();
 
   const hiddenPaths = new Set([
-    "/DashBoard",
+    "/AdminDashBoard",
    
   ]);
 
@@ -37,6 +39,7 @@ function App() {
           <Routes>
             {/* Public Route */}
             <Route path="/" element={<Home />} />
+            <Route path="/AdminDashBoard" element={<AdminDashBoard />} />
            
             
           </Routes>
