@@ -1,9 +1,8 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 
 function Home() {
   return (
-   <Link to="/AdminDashBoard"> <div>Home</div></Link>
+    <div>Home</div>
   )
 }
 
