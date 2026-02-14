@@ -15,7 +15,8 @@ import Home from "./componets/pages/Home";
 import AdminDashBoard from "./componets/admin_dashboard/AdminDashBoard";
 
 // import Footer from "./componets/footer/Footer";
-// import NavBar from "./componets/navbar/NavBar";
+import NavBar from "./componets/navbar/NavBar";
+import Login from "./componets/login/Login";
 
 
 
@@ -33,13 +34,14 @@ function App() {
   return (
     
       <div className="app-container">
-        {/* {!shouldHideNavbar && <NavBar />} */}
+        {!shouldHideNavbar && <NavBar />}
         
         <main className="main-content">
           <Routes>
             {/* Public Route */}
             <Route path="/" element={<Home />} />
             <Route path="/AdminDashBoard" element={<AdminDashBoard />} />
+            <Route path="/Login" element={<Login />} />
            
             
           </Routes>
