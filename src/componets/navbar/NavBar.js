@@ -28,7 +28,7 @@ function NavBar() {
       </div>
       
       {/* Main navigation */}
-      <Navbar expand="lg" className="bg-body-tertiary">
+      <Navbar expand="lg" className="bg-body-tertiary sticky-top">
         <Container>
           <Navbar.Brand href="#home">
             <div className="d-flex align-items-center">
