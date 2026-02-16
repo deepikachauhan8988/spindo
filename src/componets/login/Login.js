@@ -6,10 +6,10 @@ import { Container } from 'react-bootstrap';
 import "../../assets/css/login.css";
 
 const Login = () => {
-  const [role, setRole] = useState('user'); // Default role is 'user'
+  const [role, setRole] = useState('customer'); // Default role is 'customer' (instead of 'user')
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [adminId, setAdminId] = useState('');
-  const [superAdminId, setSuperAdminId] = useState('');
+  const [staffAdminId, setStaffAdminId] = useState(''); // Changed from superAdminId
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -35,30 +35,32 @@ const Login = () => {
 
     try {
       let requestBody = {};
-      let endpoint = "https://mahadevaaya.com/ngoproject/ngoproject_backend/api/login/";
+      let endpoint = "https://mahadevaaya.com/spindo/spindobackend/api/login/"; // Updated endpoint
 
       // Prepare request body based on role
-      if (role === 'user') {
+      if (role === 'customer') {
         requestBody = {
-          email_or_phone: emailOrPhone,
+          mobile_number: emailOrPhone,
           password: password,
         };
-      } else if (role === 'staff-admin') {
+      } else if (role === 'staffadmin') {
         requestBody = {
-          email_or_phone: adminId,
+          mobile_number: staffAdminId,
           password: password,
         };
-      } else if (role === 'super-admin') {
+      } else if (role === 'admin') {
         requestBody = {
-          email_or_phone: superAdminId,
+          mobile_number: adminId,
           password: password,
         };
       } else if (role === 'vendor') {
         requestBody = {
-          email_or_phone: email,
+          mobile_number: email,
           password: password,
         };
       }
+
+      console.log('Sending request:', requestBody); // Debug log
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -69,41 +71,71 @@ const Login = () => {
       });
 
       const data = await response.json();
+      console.log('Response received:', data); // Debug log
 
-      if (response.ok) {
+      // Check if the response was successful
+      if (!response.ok) {
+        // Handle HTTP errors (like 400, 401, 500, etc.)
+        throw new Error(data.message || `Request failed with status ${response.status}`);
+      }
+
+      // Check if the API returned a successful status
+      if (data.status === true) {
         // --- ROLE VALIDATION: Check if selected role matches credential role ---
-        // For user role, the API returns "user"
-        const isRoleMatch = data.role === role || 
-                           (role === 'staff-admin' && data.role === 'admin') ||
-                           (role === 'super-admin' && data.role === 'super_admin') ||
-                           (role === 'vendor' && data.role === 'vendor');
+        const apiRole = data.data.role;
+        
+        // Map the selected role to the API role format
+        let expectedApiRole;
+        switch(role) {
+          case 'staffadmin':
+            expectedApiRole = 'staffadmin';
+            break;
+          case 'admin':
+            expectedApiRole = 'admin';
+            break;
+          case 'vendor':
+            expectedApiRole = 'vendor';
+            break;
+          case 'customer':
+          default:
+            expectedApiRole = 'customer';
+            break;
+        }
 
-        if (!isRoleMatch) {
-          throw new Error( 
-            `Invalid UserName or Password for the selected role: ${role}. Please check your credentials and try again.`
+        // Verify the role matches
+        if (apiRole !== expectedApiRole) {
+          throw new Error(
+            `Invalid Credentail`
           );
         }
 
+        // Store tokens and user data in localStorage or context
+        localStorage.setItem('accessToken', data.data.access);
+        localStorage.setItem('refreshToken', data.data.refresh);
+        localStorage.setItem('userRole', data.data.role);
+        localStorage.setItem('uniqueId', data.data.unique_id);
+        localStorage.setItem('mobileNumber', data.data.mobile_number);
+
         // --- ROLE-BASED REDIRECTION LOGIC ---
         let redirectTo;
-        if (data.role === 'admin' || role === 'staff-admin') {
-          redirectTo = "/DashBoard"; // Admin dashboard
-        } else if (data.role === 'super_admin' || role === 'super-admin') {
-          redirectTo = "/SuperAdminDashboard"; // Super Admin dashboard
-        } else if (data.role === 'vendor') {
+        if (data.data.role === 'admin') {
+          redirectTo = "/AdminDashboard"; // Admin dashboard
+        } else if (data.data.role === 'staffadmin') {
+          redirectTo = "/StaffAdminDashboard"; // Staff Admin dashboard
+        } else if (data.data.role === 'vendor') {
           redirectTo = "/VendorDashboard"; // Vendor dashboard
-        } else if (data.role === 'user') {
-          // For user role
-          redirectTo = "/UserProfile";
+        } else if (data.data.role === 'customer') {
+          // For customer role
+          redirectTo = "/CustomerProfile";
         } else {
-          // Default to user dashboard
-          redirectTo = "/UserDashBoard";
+          // Default to customer dashboard
+          redirectTo = "/CustomerDashboard";
         }
 
         // Redirect the user to their role-specific dashboard
         navigate(redirectTo, { replace: true });
       } else {
-        // If the server returns an error, display the error message
+        // If the API returns an error status
         throw new Error(data.message || "Login failed. Please check your credentials.");
       }
     } catch (err) {
@@ -117,16 +149,16 @@ const Login = () => {
   // Function to get the appropriate title based on selected role
   const getLoginTitle = () => {
     switch(role) {
-      case 'staff-admin':
+      case 'admin':
+        return 'Admin Login';
+      case 'staffadmin':
         return 'Staff Admin Login';
-      case 'super-admin':
-        return 'Super Admin Login';
       case 'vendor':
         return 'Vendor Login';
-      case 'user':
-        return 'User Login';
+      case 'customer':
+        return 'Customer Login';
       default:
-        return 'User Login';
+        return 'Customer Login';
     }
   };
 
@@ -146,11 +178,11 @@ const Login = () => {
         {/* Role Selection Tabs */}
         <div className="role-tabs">
           <button 
-            className={`role-tab ${role === 'user' ? 'active' : ''}`}
-            onClick={() => setRole('user')}
+            className={`role-tab ${role === 'customer' ? 'active' : ''}`}
+            onClick={() => setRole('customer')}
           >
             <i className="fas fa-user"></i>
-            <span>LOGIN AS A USER</span>
+            <span>LOGIN AS A CUSTOMER</span>
           </button>
           <button 
             className={`role-tab ${role === 'vendor' ? 'active' : ''}`}
@@ -160,27 +192,27 @@ const Login = () => {
             <span>LOGIN AS A VENDOR</span>
           </button>
           <button 
-            className={`role-tab ${role === 'staff-admin' ? 'active' : ''}`}
-            onClick={() => setRole('staff-admin')}
+            className={`role-tab ${role === 'staffadmin' ? 'active' : ''}`}
+            onClick={() => setRole('staffadmin')}
           >
             <i className="fas fa-user-shield"></i>
             <span>Staff Admin</span>
           </button>
           <button 
-            className={`role-tab ${role === 'super-admin' ? 'active' : ''}`}
-            onClick={() => setRole('super-admin')}
+            className={`role-tab ${role === 'admin' ? 'active' : ''}`}
+            onClick={() => setRole('admin')}
           >
             <i className="fas fa-user-cog"></i>
-            <span>Super Admin</span>
+            <span>Admin</span>
           </button>
         </div>
         
         <form onSubmit={handleSubmit} className="login-form">
-          {/* User Login Fields */}
-          {role === 'user' && (
+          {/* Customer Login Fields */}
+          {role === 'customer' && (
             <>
               <div className="form-group">
-                <label htmlFor="emailOrPhone">Email or Phone</label>
+                <label htmlFor="emailOrPhone">Mobile Number</label>
                 <input
                   type="text"
                   id="emailOrPhone"
@@ -216,16 +248,16 @@ const Login = () => {
           )}
           
           {/* Staff Admin Login Fields */}
-          {role === 'staff-admin' && (
+          {role === 'staffadmin' && (
             <>
               <div className="form-group">
-                <label htmlFor="adminId">Admin ID</label>
+                <label htmlFor="staffAdminId">Mobile Number</label>
                 <input
                   type="text"
-                  id="adminId"
-                  value={adminId} 
-                  onChange={(e) => setAdminId(e.target.value)}
-                  required placeholder='admin@gmail.com' 
+                  id="staffAdminId"
+                  value={staffAdminId} 
+                  onChange={(e) => setStaffAdminId(e.target.value)}
+                  required placeholder='9999999999' 
                   disabled={isLoading}
                 />
               </div>
@@ -254,17 +286,17 @@ const Login = () => {
             </>
           )}
 
-          {/* Super Admin Login Fields */}
-          {role === 'super-admin' && (
+          {/* Admin Login Fields */}
+          {role === 'admin' && (
             <>
               <div className="form-group">
-                <label htmlFor="superAdminId">Super Admin ID</label>
+                <label htmlFor="adminId">Mobile Number</label>
                 <input
                   type="text"
-                  id="superAdminId"
-                  value={superAdminId} 
-                  onChange={(e) => setSuperAdminId(e.target.value)}
-                  required placeholder='superadmin@gmail.com' 
+                  id="adminId"
+                  value={adminId} 
+                  onChange={(e) => setAdminId(e.target.value)}
+                  required placeholder='9999999999' 
                   disabled={isLoading}
                 />
               </div>
@@ -297,9 +329,9 @@ const Login = () => {
           {role === 'vendor' && (
             <>
               <div className="form-group">
-                <label htmlFor="email">Email ID</label>
+                <label htmlFor="email">Mobile Number</label>
                 <input
-                  type="email"
+                  type="text"
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
