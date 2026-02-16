@@ -1,29 +1,29 @@
 // src/componets/pages/Login.js
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // Import the useAuth hook
 
 import { Container } from 'react-bootstrap';
 import "../../assets/css/login.css";
 
 const Login = () => {
-  const [role, setRole] = useState('customer'); // Default role is 'customer' (instead of 'user')
+  const { login } = useAuth(); // Use the auth context
+  const [role, setRole] = useState('customer'); // Default role is 'customer'
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [adminId, setAdminId] = useState('');
-  const [staffAdminId, setStaffAdminId] = useState(''); // Changed from superAdminId
+  const [staffAdminId, setStaffAdminId] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- NEW: State for password visibility ---
+  // State for password visibility
   const [showPassword, setShowPassword] = useState(false);
 
-  // Get the login function from AuthContext
-//   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // --- NEW: Function to toggle password visibility ---
+  // Function to toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -35,7 +35,7 @@ const Login = () => {
 
     try {
       let requestBody = {};
-      let endpoint = "https://mahadevaaya.com/spindo/spindobackend/api/login/"; // Updated endpoint
+      let endpoint = "https://mahadevaaya.com/spindo/spindobackend/api/login/";
 
       // Prepare request body based on role
       if (role === 'customer') {
@@ -60,7 +60,7 @@ const Login = () => {
         };
       }
 
-      console.log('Sending request:', requestBody); // Debug log
+      console.log('Sending request:', requestBody);
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -71,17 +71,16 @@ const Login = () => {
       });
 
       const data = await response.json();
-      console.log('Response received:', data); // Debug log
+      console.log('Response received:', data);
 
       // Check if the response was successful
       if (!response.ok) {
-        // Handle HTTP errors (like 400, 401, 500, etc.)
         throw new Error(data.message || `Request failed with status ${response.status}`);
       }
 
       // Check if the API returned a successful status
       if (data.status === true) {
-        // --- ROLE VALIDATION: Check if selected role matches credential role ---
+        // Role validation
         const apiRole = data.data.role;
         
         // Map the selected role to the API role format
@@ -104,38 +103,35 @@ const Login = () => {
 
         // Verify the role matches
         if (apiRole !== expectedApiRole) {
-          throw new Error(
-            `Invalid Credentail`
-          );
+          throw new Error("Invalid Credential");
         }
 
-        // Store tokens and user data in localStorage or context
-        localStorage.setItem('accessToken', data.data.access);
-        localStorage.setItem('refreshToken', data.data.refresh);
-        localStorage.setItem('userRole', data.data.role);
-        localStorage.setItem('uniqueId', data.data.unique_id);
-        localStorage.setItem('mobileNumber', data.data.mobile_number);
+        // Use the login function from AuthContext
+        login({
+          access: data.data.access,
+          refresh: data.data.refresh,
+          role: data.data.role,
+          unique_id: data.data.unique_id,
+          mobile_number: data.data.mobile_number
+        });
 
-        // --- ROLE-BASED REDIRECTION LOGIC ---
+        // Role-based redirection logic
         let redirectTo;
         if (data.data.role === 'admin') {
-          redirectTo = "/AdminDashboard"; // Admin dashboard
+          redirectTo = "/AdminDashboard";
         } else if (data.data.role === 'staffadmin') {
-          redirectTo = "/StaffAdminDashboard"; // Staff Admin dashboard
+          redirectTo = "/StaffAdminDashboard";
         } else if (data.data.role === 'vendor') {
-          redirectTo = "/VendorDashboard"; // Vendor dashboard
+          redirectTo = "/VendorDashboard";
         } else if (data.data.role === 'customer') {
-          // For customer role
           redirectTo = "/CustomerProfile";
         } else {
-          // Default to customer dashboard
           redirectTo = "/CustomerDashboard";
         }
 
         // Redirect the user to their role-specific dashboard
         navigate(redirectTo, { replace: true });
       } else {
-        // If the API returns an error status
         throw new Error(data.message || "Login failed. Please check your credentials.");
       }
     } catch (err) {
@@ -224,7 +220,6 @@ const Login = () => {
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password</label>
-                {/* --- MODIFIED: Password input with toggle --- */}
                 <div className="password-input-container">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -263,7 +258,6 @@ const Login = () => {
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password</label>
-                {/* --- MODIFIED: Password input with toggle --- */}
                 <div className="password-input-container">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -302,7 +296,6 @@ const Login = () => {
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password</label>
-                {/* --- MODIFIED: Password input with toggle --- */}
                 <div className="password-input-container">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -341,7 +334,6 @@ const Login = () => {
               </div>
               <div className="form-group">
                 <label htmlFor="password">Password</label>
-                {/* --- MODIFIED: Password input with toggle --- */}
                 <div className="password-input-container">
                   <input
                     type={showPassword ? "text" : "password"}
