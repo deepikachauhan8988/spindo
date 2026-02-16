@@ -120,7 +120,7 @@ const Login = () => {
         if (data.data.role === 'admin') {
           redirectTo = "/AdminDashBoard";
         } else if (data.data.role === 'staffadmin') {
-          redirectTo = "/StaffAdminDashBoard";
+          redirectTo = "/StaffDashBoard";
         } else if (data.data.role === 'vendor') {
           redirectTo = "/VendorDashBoard";
         } else if (data.data.role === 'customer') {

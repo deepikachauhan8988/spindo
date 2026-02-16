@@ -55,6 +55,13 @@ const menuItems = [
       active: true,
     },
    
+     {
+      icon: <FaTachometerAlt />,
+      label: "Vendor Registration",
+      path: "/VendorRegistration",
+      active: true,
+    },
+   
 
    
     

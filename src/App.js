@@ -22,6 +22,7 @@ import UserDashBoard from "./componets/user_dashboard/UserDashBoard";
 import VendorDashBoard from "./componets/vendor_dashboard/VendorDashBoard";
 import StaffDashBoard from "./componets/staff_dashboard/StaffDashBoard";
 import AboutUs from "./componets/pages/AboutUs";
+import VendorRegistration from "./componets/staff_dashboard/vendor_reg/VendorRegistration";
 
 
 
@@ -34,6 +35,7 @@ function App() {
     "/UserDashBoard",
     "/StaffDashBoard",
     "/VendorDashBoard",
+    "/VendorRegistration"
    
   ]);
 
@@ -55,6 +57,7 @@ function App() {
             <Route path="/VendorDashBoard" element={<VendorDashBoard />} />
             <Route path="/StaffDashBoard" element={<StaffDashBoard />} />
             <Route path="/AboutUs" element={<AboutUs />} />
+            <Route path="/VendorRegistration" element={<VendorRegistration />} />
             
       
            
