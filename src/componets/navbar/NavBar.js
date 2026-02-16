@@ -44,7 +44,7 @@ function NavBar() {
               <Container>
             <Nav className="me-auto">
               <Nav.Link href="/">HOME</Nav.Link>
-              <Nav.Link href="#about">ABOUT</Nav.Link>
+              <Nav.Link href="/AboutUs">ABOUT</Nav.Link>
               <NavDropdown title="SERVICES" id="basic-nav-dropdown">
                 <NavDropdown.Item href="#plumber">PLUMBER</NavDropdown.Item>
                 <NavDropdown.Item href="#electrician">ELECTRICIAN</NavDropdown.Item>

@@ -21,6 +21,7 @@ import Registration from "./register/Registration";
 import UserDashBoard from "./componets/user_dashboard/UserDashBoard";
 import VendorDashBoard from "./componets/vendor_dashboard/VendorDashBoard";
 import StaffDashBoard from "./componets/staff_dashboard/StaffDashBoard";
+import AboutUs from "./componets/pages/AboutUs";
 
 
 
@@ -53,6 +54,7 @@ function App() {
             <Route path="/UserDashBoard" element={<UserDashBoard />} />
             <Route path="/VendorDashBoard" element={<VendorDashBoard />} />
             <Route path="/StaffDashBoard" element={<StaffDashBoard />} />
+            <Route path="/AboutUs" element={<AboutUs />} />
             
       
            
