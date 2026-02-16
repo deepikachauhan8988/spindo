@@ -118,15 +118,15 @@ const Login = () => {
         // Role-based redirection logic
         let redirectTo;
         if (data.data.role === 'admin') {
-          redirectTo = "/AdminDashboard";
+          redirectTo = "/AdminDashBoard";
         } else if (data.data.role === 'staffadmin') {
-          redirectTo = "/StaffAdminDashboard";
+          redirectTo = "/StaffAdminDashBoard";
         } else if (data.data.role === 'vendor') {
-          redirectTo = "/VendorDashboard";
+          redirectTo = "/VendorDashBoard";
         } else if (data.data.role === 'customer') {
           redirectTo = "/CustomerProfile";
         } else {
-          redirectTo = "/CustomerDashboard";
+          redirectTo = "/CustomerDashBoard";
         }
 
         // Redirect the user to their role-specific dashboard
