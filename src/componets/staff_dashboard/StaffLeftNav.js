@@ -36,7 +36,7 @@ import {
 
 // import BRLogo from "../../assets/images/brainrock_logo.png";
 
-const AdminLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
+const StaffLeftNav = ({ sidebarOpen, setSidebarOpen, isMobile, isTablet }) => {
     // const { logout } = useContext(AuthContext);
     // const { user } = useContext(AuthContext);
 // const emp_id = user?.unique_id;  // This is the correct value
@@ -51,7 +51,7 @@ const menuItems = [
     {
       icon: <FaTachometerAlt />,
       label: "Dashboard",
-      path: "/AdminDashBoard",
+      path: "/StaffDashBoard",
       active: true,
     },
    
@@ -230,4 +230,4 @@ const menuItems = [
   );
 };
 
-export default AdminLeftNav;
+export default StaffLeftNav;

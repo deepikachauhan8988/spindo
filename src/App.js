@@ -19,6 +19,8 @@ import NavBar from "./componets/navbar/NavBar";
 import Login from "./componets/login/Login";
 import Registration from "./register/Registration";
 import UserDashBoard from "./componets/user_dashboard/UserDashBoard";
+import VendorDashBoard from "./componets/vendor_dashboard/VendorDashBoard";
+import StaffDashBoard from "./componets/staff_dashboard/StaffDashBoard";
 
 
 
@@ -28,7 +30,9 @@ function App() {
 
   const hiddenPaths = new Set([
     "/AdminDashBoard",
-    "/UserDashBoard"
+    "/UserDashBoard",
+    "/StaffDashBoard",
+    "/VendorDashBoard",
    
   ]);
 
@@ -47,6 +51,8 @@ function App() {
             <Route path="/Registration" element={<Registration />} />
             <Route path="/Login" element={<Login />} />
             <Route path="/UserDashBoard" element={<UserDashBoard />} />
+            <Route path="/VendorDashBoard" element={<VendorDashBoard />} />
+            <Route path="/StaffDashBoard" element={<StaffDashBoard />} />
             
       
            

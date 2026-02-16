@@ -51,7 +51,7 @@ const menuItems = [
     {
       icon: <FaTachometerAlt />,
       label: "Dashboard",
-      path: "/DashBoard",
+      path: "/UserDashBoard",
       active: true,
     },
    
