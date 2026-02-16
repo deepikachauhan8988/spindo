@@ -54,6 +54,12 @@ const menuItems = [
       path: "/AdminDashBoard",
       active: true,
     },
+    {
+  icon: <FaUsers />,
+  label: "Total Registration",
+  path: "/TotalRegistration",
+},
+
    
 
     // {

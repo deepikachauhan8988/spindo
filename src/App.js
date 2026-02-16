@@ -23,7 +23,7 @@ import VendorDashBoard from "./componets/vendor_dashboard/VendorDashBoard";
 import StaffDashBoard from "./componets/staff_dashboard/StaffDashBoard";
 import AboutUs from "./componets/pages/AboutUs";
 import VendorRegistration from "./componets/staff_dashboard/vendor_reg/VendorRegistration";
-
+import TotalRegistration from "./componets/admin_dashboard/pages/TotalRegistration";
 
 
 function App() {
@@ -35,7 +35,8 @@ function App() {
     "/UserDashBoard",
     "/StaffDashBoard",
     "/VendorDashBoard",
-    "/VendorRegistration"
+    "/VendorRegistration",
+    "/TotalRegistration",
    
   ]);
 
@@ -61,7 +62,7 @@ function App() {
             
       
            
-            
+            <Route path="/TotalRegistration" element={<TotalRegistration />} /> 
           </Routes>
         </main>
            {/* {!shouldHideNavbar && <Footer />} */}
