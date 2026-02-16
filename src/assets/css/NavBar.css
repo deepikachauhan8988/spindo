@@ -4,6 +4,7 @@
 .navbar {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: all 0.3s ease;
+  padding: 0px !important;
   background-color: 
 #14549d !important;
 }
@@ -20,15 +21,18 @@
   padding: 8px 0;
   font-size: 0.9rem;
 }
-
+.navbar-nav{
+font-size: 12px;
+}
 .contact-info span {
   display: inline-flex;
   align-items: center;
+  font-size: 12px;
 }
 
 .social-links a {
   color: white;
-  font-size: 1.1rem;
+  font-size: 12px;
   transition: color 0.3s ease;
   text-decoration: none;
 }

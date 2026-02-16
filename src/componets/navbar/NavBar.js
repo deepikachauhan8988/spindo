@@ -61,9 +61,11 @@ function NavBar() {
             </Container>
             {/* Right side - Only Register and Login buttons */}
             <Nav className="ms-auto">
-              <Button variant="outline-primary" className="me-2" href="#register">
+             <Link to="/Registration">
+              <Button variant="outline-primary" className="me-2">
                 Register
               </Button>
+              </Link>
               <Link to="/Login">
                 <Button variant="primary">
                   Login
