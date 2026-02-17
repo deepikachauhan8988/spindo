@@ -1,4 +1,5 @@
 // src/componets/pages/Login.js
+import UserProfile from "../user_dashboard/UserProfile";
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Import the useAuth hook
@@ -124,10 +125,8 @@ const Login = () => {
         } else if (data.data.role === 'vendor') {
           redirectTo = "/VendorDashBoard";
         } else if (data.data.role === 'customer') {
-          redirectTo = "/CustomerProfile";
-        } else {
-          redirectTo = "/CustomerDashBoard";
-        }
+          redirectTo = "/UserDashBoard";
+        } 
 
         // Redirect the user to their role-specific dashboard
         navigate(redirectTo, { replace: true });

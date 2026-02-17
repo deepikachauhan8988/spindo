@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import UserProfile from "../user_dashboard/UserProfile";
 
 const Protected = ({ children, allowedRoles }) => {
   const { isAuthenticated, user, isLoading } = useAuth();

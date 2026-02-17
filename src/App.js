@@ -16,6 +16,7 @@ import NavBar from "./componets/navbar/NavBar";
 import Login from "./componets/login/Login";
 import Registration from "./register/Registration";
 import UserDashBoard from "./componets/user_dashboard/UserDashBoard";
+import UserProfile from "./componets/user_dashboard/UserProfile";
 import VendorDashBoard from "./componets/vendor_dashboard/VendorDashBoard";
 import StaffDashBoard from "./componets/staff_dashboard/StaffDashBoard";
 import AboutUs from "./componets/pages/AboutUs";
@@ -36,7 +37,8 @@ function App() {
     "/VendorRegistration",
     "/TotalRegistration",
     "/ServiceCategory",
-    "/ManageServiceCategory"
+    "/ManageServiceCategory",
+    "/UserProfile"
   ]);
 
   const shouldHideNavbar = hiddenPaths.has(location.pathname);
@@ -67,6 +69,14 @@ function App() {
             element={
               <Protected allowedRoles={['customer']}>
                 <UserDashBoard />
+              </Protected>
+            } 
+          />
+            <Route
+            path="/UserProfile"
+            element={
+              <Protected allowedRoles={['customer']}>
+                <UserProfile />
               </Protected>
             } 
           />

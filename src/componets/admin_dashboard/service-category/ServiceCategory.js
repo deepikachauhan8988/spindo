@@ -39,7 +39,7 @@ const ServiceCategory = () => {
     prod_cate: "",
     sub_cate: "",
     prod_img: "",
-    status: "draft"
+    status: ""
   });
   
   // Form submission states
@@ -418,8 +418,8 @@ const ServiceCategory = () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="draft">Draft</option>
-                    <option value="published">Published</option>
+                    <option value="draft">draft</option>
+                    <option value="published">published</option>
                   </Form.Select>
                 </Form.Group>
               </Col>

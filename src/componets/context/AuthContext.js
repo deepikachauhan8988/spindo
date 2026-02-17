@@ -25,26 +25,23 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Function to refresh access token
-  const refreshAccessToken = async () => {
-    if (!tokens.refresh) {
+  const refreshAccessToken = async (refreshToken) => {
+    if (!refreshToken) {
       console.error('No refresh token available.');
       logout();
       return null;
     }
-
     try {
       const response = await axios.post(REFRESH_TOKEN_URL, {
-        refresh: tokens.refresh
+        refresh: refreshToken
       });
-
       if (response.data.access) {
         const newTokens = {
           ...tokens,
-          access: response.data.access
+          access: response.data.access,
+          refresh: refreshToken
         };
         setTokens(newTokens);
-        // Save the new token to localStorage
-        localStorage.setItem('tokens', JSON.stringify(newTokens));
         return newTokens.access;
       }
     } catch (error) {
@@ -55,69 +52,58 @@ export const AuthProvider = ({ children }) => {
   };
 
   // IMPORTANT: This effect runs on app start to check if user was logged in
+  // On mount, try to restore session from memory (if available) or refresh token from sessionStorage
   useEffect(() => {
-    const initializeAuth = () => {
-      try {
-        const savedTokens = localStorage.getItem('tokens');
-        const savedUser = localStorage.getItem('user');
-
-        if (savedTokens && savedUser) {
-          const parsedTokens = JSON.parse(savedTokens);
-          const parsedUser = JSON.parse(savedUser);
-
-          if (parsedTokens.refresh) {
-            // If tokens exist, restore the auth state
-            setTokens(parsedTokens);
+    const restoreSession = async () => {
+      // Try to get tokens and user from sessionStorage
+      const savedTokens = sessionStorage.getItem('tokens');
+      const savedUser = sessionStorage.getItem('user');
+      if (savedTokens && savedUser) {
+        const parsedTokens = JSON.parse(savedTokens);
+        const parsedUser = JSON.parse(savedUser);
+        // Try to refresh access token if needed
+        if (parsedTokens.refresh) {
+          const newAccess = await refreshAccessToken(parsedTokens.refresh);
+          if (newAccess) {
+            setTokens({ access: newAccess, refresh: parsedTokens.refresh });
             setUser(parsedUser);
             setIsAuthenticated(true);
+          } else {
+            setTokens({ access: null, refresh: null });
+            setUser(null);
+            setIsAuthenticated(false);
           }
         }
-      } catch (error) {
-        console.error("Failed to load auth state:", error);
-        // If data is bad, clear it
-        localStorage.removeItem('tokens');
-        localStorage.removeItem('user');
-      } finally {
-        // App is ready to render
-        setIsLoading(false);
       }
+      setIsLoading(false);
     };
-
-    initializeAuth();
+    restoreSession();
   }, []);
 
-  // Login function - saves state AND localStorage
+  // Login function - saves state in React context and sessionStorage
   const login = (userData) => {
     const { access, refresh, role, unique_id, mobile_number } = userData;
-    
     const userInfo = {
       role,
       uniqueId: unique_id,
       mobileNumber: mobile_number
     };
-    
     const newTokens = { access, refresh };
-
-    // Update React state
     setTokens(newTokens);
     setUser(userInfo);
     setIsAuthenticated(true);
-    
-    // IMPORTANT: Save to localStorage so user stays logged in after refresh
-    localStorage.setItem('tokens', JSON.stringify(newTokens));
-    localStorage.setItem('user', JSON.stringify(userInfo));
+    // Save to sessionStorage for persistence across refresh
+    sessionStorage.setItem('tokens', JSON.stringify(newTokens));
+    sessionStorage.setItem('user', JSON.stringify(userInfo));
   };
 
-  // Logout function - clears state AND localStorage
+  // Logout function - clears state in React context and sessionStorage
   const logout = () => {
-    // Reset React state
     setTokens({ access: null, refresh: null });
     setUser(null);
     setIsAuthenticated(false);
-    
-    // IMPORTANT: Clear localStorage so user is fully logged out
-    localStorage.removeItem('tokens');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('tokens');
+    sessionStorage.removeItem('user');
   };
 
   const value = {

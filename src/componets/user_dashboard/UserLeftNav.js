@@ -26,6 +26,7 @@ import {
   FaIndustry
 } from "react-icons/fa";
 import axios from "axios";
+import UserProfile from "./UserProfile";
 import "../../assets/css/admindashboard.css";
 import { Link } from "react-router-dom";
 import {
@@ -52,6 +53,12 @@ const menuItems = [
       icon: <FaTachometerAlt />,
       label: "Dashboard",
       path: "/UserDashBoard",
+      active: true,
+    },
+    {
+      icon: <FaUserCircle />,
+      label: "User Profile",
+      path: "/UserProfile",
       active: true,
     },
    
