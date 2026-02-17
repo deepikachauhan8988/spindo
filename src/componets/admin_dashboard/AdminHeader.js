@@ -1,3 +1,5 @@
+// src/components/AdminHeader.js (या जहाँ भी यह file है)
+
 import React, { useContext, useState, useEffect } from "react";
 import {
   Container,
@@ -21,16 +23,15 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-// 1. Accept searchTerm and setSearchTerm as props
+// 1. AuthContext से useAuth hook import करें
+import { useAuth } from '../context/AuthContext'; // अपने path को यहाँ adjust करें
+
 function AdminHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
   
   const navigate = useNavigate();
 
-  // Get auth data from localStorage
-  const getAuthData = () => {
-    const storedAuth = localStorage.getItem('auth');
-    return storedAuth ? JSON.parse(storedAuth) : null;
-  };
+  // 2. useAuth hook का उपयोग करके logout function और user data प्राप्त करें
+  const { logout, user } = useAuth();
 
   const [notifications, setNotifications] = useState([
     {
@@ -55,17 +56,15 @@ function AdminHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
 
   const [unreadCount, setUnreadCount] = useState(2);
   
-  // State for user details
+  // State for user details (profile photo आदि के लिए)
   const [userDetails, setUserDetails] = useState({
     first_name: "",
     last_name: "",
     profile_photo: null,
   });
   
-  // State for loading and error handling
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [authError, setAuthError] = useState(null);
   const [imageError, setImageError] = useState(false);
 
   // Function to get display name
@@ -75,16 +74,11 @@ function AdminHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
     } else if (userDetails.first_name) {
       return userDetails.first_name;
     } else {
-      return "Admin";
+      // अगर context से कोई नाम नहीं मिला तो 'Admin' दिखाएं
+      return "Admin"; 
     }
   };
-
-  // Function to fetch user data with auth handling
-
-
-  // Fetch user data when component mounts
- 
-
+  
   const markAsRead = (id) => {
     setNotifications(
       notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
@@ -92,36 +86,35 @@ function AdminHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
     setUnreadCount((prev) => prev - 1);
   };
   
-  // Get user photo URL
   const getUserPhotoUrl = () => {
     const profilePhoto = userDetails.profile_photo;
     
-    console.log('Profile photo from state:', profilePhoto);
-    
     if (profilePhoto && !imageError) {
       if (profilePhoto.startsWith('http')) {
-        console.log('Full URL profile photo:', profilePhoto);
         return profilePhoto;
       }
       const fullUrl = `https://mahadevaaya.com/eventmanagement/eventmanagement_backend/${profilePhoto}`;
-      console.log('Constructed profile photo URL:', fullUrl);
       return fullUrl;
     }
     return null;
   };
   
-  // Handle image loading error
   const handleImageError = (e) => {
     console.error('Error loading profile image:', e);
     setImageError(true);
     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(getDisplayName())}&background=0d6efd&color=fff&size=40`;
   };
   
-  // Handle logout
+  // 3. handleLogout function को update करें
   const handleLogout = () => {
-    localStorage.removeItem('auth');
+    // AuthContext का logout function call करें
+    // यह automatically localStorage और state दोनों को clear कर देगा
+    logout(); 
+    
+    // उसके बाद user को login page पर redirect करें
     navigate("/", { replace: true });
   };
+  
   return (
     <header className="dashboard-header">
       <Container fluid>
@@ -137,11 +130,6 @@ function AdminHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
           </Col>
 
           <Col>
-            {authError && (
-              <Alert variant="danger" className="mb-0 py-1">
-                <small>{authError}</small>
-              </Alert>
-            )}
             {error && (
               <Alert variant="warning" className="mb-0 py-1">
                 <small>{error}</small>
@@ -151,51 +139,25 @@ function AdminHeader({ toggleSidebar, searchTerm, setSearchTerm }) {
           <Col xs="auto">
             <div className="header-actions">
               <Dropdown align="end">
-                {/* <Dropdown.Toggle variant="light" className="notification-btn">
-                  <FaBell />
-                  {unreadCount > 0 && (
-                    <Badge pill bg="danger" className="notification-badge">
-                      {unreadCount}
-                    </Badge>
-                  )}
-                </Dropdown.Toggle> */}
-
-                {/* <Dropdown.Menu className="notification-dropdown">
-                  <div className="notification-header">
-                    <h6>Notifications</h6>
-                  </div>
-
-                  {notifications.map((notif) => (
-                    <Dropdown.Item
-                      key={notif.id}
-                      className={`notification-item ${
-                        !notif.read ? "unread" : ""
-                      }`}
-                      onClick={() => markAsRead(notif.id)}
-                    >
-                      <p>{notif.text}</p>
-                      <small>{notif.time}</small>
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu> */}
+                {/* Notification dropdown code */}
               </Dropdown>
 
               <Dropdown align="end">
-  <Dropdown.Toggle variant="light" className="user-profile-btn">
-    {/* <Image
-      src={getUserPhotoUrl()}
-      roundedCircle
-      className="user-avatar"
-      onError={handleImageError}
-    /> */}
-    Admin
-  </Dropdown.Toggle>
-  <Dropdown.Menu>
-    <Dropdown.Item onClick={handleLogout}>
-      <FaSignOutAlt className="me-2" /> Logout
-    </Dropdown.Item>
-  </Dropdown.Menu>
-</Dropdown>
+                <Dropdown.Toggle variant="light" className="user-profile-btn">
+                  <Image
+                    src={getUserPhotoUrl()}
+                    roundedCircle
+                    className="user-avatar"
+                    onError={handleImageError}
+                  />
+                  {getDisplayName()}
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={handleLogout}>
+                    <FaSignOutAlt className="me-2" /> Logout
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
             </div>
           </Col>
         </Row>

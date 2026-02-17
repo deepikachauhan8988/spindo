@@ -60,24 +60,25 @@ const menuItems = [
   path: "/TotalRegistration",
 },
 
+
    
 
-    // {
-    //   icon: <FaCalendarAlt />,
-    //   label: "Event",
-    //   submenu: [
-    //     {
-    //       label: "Add Event",
-    //       path: "/AddEvent",
-    //       icon: <FaPlusSquare />,
-    //     },
-    //     {
-    //       label: "Manage Event",
-    //       path: "/ManageEvent",
-    //       icon: <FaListUl />,
-    //     },
-    //   ],
-    // },
+    {
+      icon: <FaCalendarAlt />,
+      label: "Service Category",
+      submenu: [
+        {
+          label: "Add Service Category",
+          path: "/ServiceCategory",
+          icon: <FaPlusSquare />,
+        },
+        {
+          label: "Manage Service Category",
+          path: "/ManageServiceCategory",
+          icon: <FaListUl />,
+        },
+      ],
+    },
 
     
   ];

@@ -6,7 +6,7 @@ import StaffHeader from "../StaffHeader";
 import { useAuth } from "../../context/AuthContext";
 
 const VendorRegistration = () => {
-  const { tokens } = useAuth();
+  const { tokens, refreshAccessToken } = useAuth();
   // Check device width
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -85,28 +85,70 @@ const VendorRegistration = () => {
         body: JSON.stringify(formData),
       });
       
-      const data = await response.json();
-      
-      if (response.ok) {
-        setSuccess(true);
-        // Reset form
-        setFormData({
-          username: "",
-          mobile_number: "",
-          email: "",
-          state: "",
-          district: "",
-          block: "",
-          password: "",
-          address: "",
-          category: {
-            type: "",
-            subtype: ""
-          },
-          description: ""
-        });
+      if (response.status === 401) {
+        // Access token expired, try to refresh
+        const newAccessToken = await refreshAccessToken();
+        if (newAccessToken) {
+          // Retry request with new access token
+          const retryResponse = await fetch("https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${newAccessToken}`,
+            },
+            body: JSON.stringify(formData),
+          });
+          
+          const retryData = await retryResponse.json();
+          
+          if (retryResponse.ok) {
+            setSuccess(true);
+            // Reset form
+            setFormData({
+              username: "",
+              mobile_number: "",
+              email: "",
+              state: "",
+              district: "",
+              block: "",
+              password: "",
+              address: "",
+              category: {
+                type: "",
+                subtype: ""
+              },
+              description: ""
+            });
+          } else {
+            setError(retryData.message || "Registration failed. Please try again.");
+          }
+        } else {
+          setError("Authentication required. Please log in.");
+        }
       } else {
-        setError(data.message || "Registration failed. Please try again.");
+        const data = await response.json();
+        
+        if (response.ok) {
+          setSuccess(true);
+          // Reset form
+          setFormData({
+            username: "",
+            mobile_number: "",
+            email: "",
+            state: "",
+            district: "",
+            block: "",
+            password: "",
+            address: "",
+            category: {
+              type: "",
+              subtype: ""
+            },
+            description: ""
+          });
+        } else {
+          setError(data.message || "Registration failed. Please try again.");
+        }
       }
     } catch (err) {
       setError("Network error. Please check your connection and try again.");
