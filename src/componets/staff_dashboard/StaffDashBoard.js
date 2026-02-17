@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Container, Table, Spinner, Alert, Row, Col, Card, Button, Dropdown } from "react-bootstrap";
+import { Container, Table, Spinner, Alert, Row, Col, Card, Button, Dropdown, Modal, Form } from "react-bootstrap";
 import "../../assets/css/admindashboard.css";
 import StaffLeftNav from "./StaffLeftNav";
 import StaffHeader from "./StaffHeader";
 import "../../assets/css/table.css";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios"; // Import axios to match TotalRegistration
+import axios from "axios";
 
 const StaffDashBoard = () => {
   // Check device width
@@ -22,12 +22,28 @@ const StaffDashBoard = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [activeTable, setActiveTable] = useState("vendors"); // "vendors" or "customers"
   
-  // Get auth context - similar to TotalRegistration
+  // Modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [currentVendor, setCurrentVendor] = useState(null);
+  const [editForm, setEditForm] = useState({
+    username: "",
+    mobile_number: "",
+    email: "",
+    state: "",
+    district: "",
+    block: "",
+    is_active: true,
+    category: ""
+  });
+  
+  // Get auth context
   const { tokens, isLoading: authLoading, refreshAccessToken, logout } = useAuth();
 
-  // API URLs - similar structure to TotalRegistration
+  // API URLs
   const VENDOR_API_URL = "https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/";
   const CUSTOMER_API_URL = "https://mahadevaaya.com/spindo/spindobackend/api/customer/register/";
+  const VENDOR_UPDATE_URL = "https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/";
+  const VENDOR_DELETE_URL = "https://mahadevaaya.com/spindo/spindobackend/api/vendor/register/";
 
   useEffect(() => {
     const checkDevice = () => {
@@ -43,7 +59,7 @@ const StaffDashBoard = () => {
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
-  // Fetch vendor and customer data from APIs - using axios like TotalRegistration
+  // Fetch vendor and customer data from APIs
   const fetchData = async () => {
     if (!tokens?.access || !tokens?.refresh) {
       setLoading(false);
@@ -55,7 +71,7 @@ const StaffDashBoard = () => {
     setError(null);
 
     try {
-      // Set up authorization headers - similar to TotalRegistration
+      // Set up authorization headers
       const headers = {
         headers: { Authorization: `Bearer ${tokens.access}` }
       };
@@ -140,13 +156,218 @@ const StaffDashBoard = () => {
        ? customers.filter(customer => customer.is_active)
        : customers.filter(customer => !customer.is_active));
 
-  // Refresh data function - similar to TotalRegistration's fetchStaff
+  // Refresh data function
   const handleRefresh = () => {
     fetchData();
   };
 
+  // Handle edit button click
+  const handleEditClick = (vendor) => {
+    setCurrentVendor(vendor);
+    setEditForm({
+      username: vendor.username,
+      mobile_number: vendor.mobile_number,
+      email: vendor.email,
+      state: vendor.state,
+      district: vendor.district,
+      block: vendor.block,
+      is_active: vendor.is_active,
+      category: vendor.category?.id || ""
+    });
+    setShowEditModal(true);
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setEditForm(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  // Handle save changes in edit modal
+  const handleSaveChanges = async () => {
+    if (!currentVendor) return;
+    
+    try {
+      const headers = {
+        headers: { Authorization: `Bearer ${tokens.access}` }
+      };
+      
+      // Send unique_id in request body for PUT request
+      const response = await axios.put(
+        `${VENDOR_UPDATE_URL}`, 
+        { ...editForm, unique_id: currentVendor.unique_id }, 
+        headers
+      );
+      
+      if (response.data.status) {
+        // Update vendor in state
+        setVendors(prev => prev.map(vendor => 
+          vendor.unique_id === currentVendor.unique_id 
+            ? { ...vendor, ...editForm }
+            : vendor
+        ));
+        
+        setShowEditModal(false);
+        // Show success message
+        alert("Vendor updated successfully!");
+      } else {
+        throw new Error("Failed to update vendor");
+      }
+    } catch (err) {
+      console.error("UPDATE ERROR:", err.response?.data || err.message);
+      
+      // Check if access token is expired (status code 401)
+      if (err.response?.status === 401) {
+        console.log("Access token expired, attempting to refresh...");
+        const newAccessToken = await refreshAccessToken(tokens.refresh);
+        
+        if (newAccessToken) {
+          // Retry update with new access token
+          return handleSaveChanges();
+        } else {
+          setError("Session expired. Please log in again.");
+        }
+      } else {
+        setError(err.response?.data?.detail || err.message || "Failed to update vendor");
+      }
+    }
+  };
+
+  // Handle delete button click
+  const handleDeleteClick = async (vendorUniqueId) => {
+    if (window.confirm("Are you sure you want to delete this vendor?")) {
+      try {
+        const headers = {
+          headers: { Authorization: `Bearer ${tokens.access}` }
+        };
+        
+        // Send unique_id in request body for DELETE request
+        const response = await axios.delete(
+          `${VENDOR_DELETE_URL}`, 
+          { 
+            ...headers,
+            data: { unique_id: vendorUniqueId }
+          }
+        );
+        
+        if (response.data.status) {
+          // Remove vendor from state using unique_id
+          setVendors(prev => prev.filter(vendor => vendor.unique_id !== vendorUniqueId));
+          // Show success message
+          alert("Vendor deleted successfully!");
+        } else {
+          throw new Error("Failed to delete vendor");
+        }
+      } catch (err) {
+        console.error("DELETE ERROR:", err.response?.data || err.message);
+        
+        // Check if access token is expired (status code 401)
+        if (err.response?.status === 401) {
+          console.log("Access token expired, attempting to refresh...");
+          const newAccessToken = await refreshAccessToken(tokens.refresh);
+          
+          if (newAccessToken) {
+            // Retry delete with new access token
+            return handleDeleteClick(vendorUniqueId);
+          } else {
+            setError("Session expired. Please log in again.");
+          }
+        } else {
+          setError(err.response?.data?.detail || err.message || "Failed to delete vendor");
+        }
+      }
+    }
+  };
+
   return (
     <>
+      <style type="text/css">
+        {`
+          .dashboard-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: none;
+          }
+          
+          .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+          }
+          
+          .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #4e73df 0%, #224abe 100%);
+          }
+          
+          .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #5a5c69;
+            margin-bottom: 0.5rem;
+          }
+          
+          .card-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #4e73df;
+            margin: 0.5rem 0;
+          }
+          
+          .action-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            margin: 0 0.25rem;
+          }
+          
+          .table-thead {
+            background-color: #4e73df;
+            color: white;
+          }
+          
+          .cursor-pointer {
+            cursor: pointer;
+          }
+          
+          .vendor-card-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 2rem;
+            opacity: 0.2;
+            color: #4e73df;
+          }
+          
+          .customer-card-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 2rem;
+            opacity: 0.2;
+            color: #36b9cc;
+          }
+          
+          .customer-card::before {
+            background: linear-gradient(90deg, #36b9cc 0%, #258391 100%);
+          }
+          
+          .customer-card .card-number {
+            color: #36b9cc;
+          }
+        `}
+      </style>
+      
       <div className="dashboard-container">
         {/* Left Sidebar */}
         <StaffLeftNav
@@ -208,6 +429,7 @@ const StaffDashBoard = () => {
                       className="dashboard-card h-100 cursor-pointer"
                       onClick={() => handleCardClick("vendors")}
                     >
+                      <i className="bi bi-shop vendor-card-icon"></i>
                       <Card.Body className="text-center">
                         <Card.Title className="card-title">Total Vendors</Card.Title>
                         <h2 className="card-number">{totalVendors}</h2>
@@ -221,9 +443,10 @@ const StaffDashBoard = () => {
                   
                   <Col md={6} className="mb-3">
                     <Card 
-                      className="dashboard-card h-100 cursor-pointer"
+                      className="dashboard-card customer-card h-100 cursor-pointer"
                       onClick={() => handleCardClick("customers")}
                     >
+                      <i className="bi bi-people customer-card-icon"></i>
                       <Card.Body className="text-center">
                         <Card.Title className="card-title">Total Customers</Card.Title>
                         <h2 className="card-number">{totalCustomers}</h2>
@@ -291,6 +514,7 @@ const StaffDashBoard = () => {
                               <>
                                 <th>Email</th>
                                 <th>Category</th>
+                                <th>Actions</th>
                               </>
                             )}
                             <th>Active</th>
@@ -298,7 +522,7 @@ const StaffDashBoard = () => {
                         </thead>
                         <tbody>
                           {filteredData.map((item, index) => (
-                            <tr key={item.id}>
+                            <tr key={item.unique_id}>
                               <td>{index + 1}</td>
                               <td>{item.unique_id}</td>
                               <td>{item.username}</td>
@@ -310,6 +534,24 @@ const StaffDashBoard = () => {
                                 <>
                                   <td>{item.email}</td>
                                   <td>{item.category?.type || 'N/A'}</td>
+                                  <td>
+                                    <Button 
+                                      variant="primary" 
+                                      size="sm" 
+                                      className="action-btn"
+                                      onClick={() => handleEditClick(item)}
+                                    >
+                                      <i className="bi bi-pencil"></i> Edit
+                                    </Button>
+                                    <Button 
+                                      variant="danger" 
+                                      size="sm" 
+                                      className="action-btn"
+                                      onClick={() => handleDeleteClick(item.unique_id)}
+                                    >
+                                      <i className="bi bi-trash"></i> Delete
+                                    </Button>
+                                  </td>
                                 </>
                               )}
                               <td>
@@ -333,6 +575,121 @@ const StaffDashBoard = () => {
           </Container>
         </div>
       </div>
+
+      {/* Edit Vendor Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Vendor</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Username</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="username"
+                    value={editForm.username}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Mobile Number</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="mobile_number"
+                    value={editForm.mobile_number}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={editForm.email}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>State</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="state"
+                    value={editForm.state}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>District</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="district"
+                    value={editForm.district}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Block</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="block"
+                    value={editForm.block}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Category</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="category"
+                    value={editForm.category}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3">
+                  <Form.Check
+                    type="checkbox"
+                    name="is_active"
+                    label="Active"
+                    checked={editForm.is_active}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSaveChanges}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
