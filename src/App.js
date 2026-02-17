@@ -25,6 +25,7 @@ import TotalRegistration from "./componets/admin_dashboard/pages/TotalRegistrati
 import ServiceCategory from "./componets/admin_dashboard/service-category/ServiceCategory";
 import Protected from "./componets/protected/Protected";
 import ManageServiceCategory from "./componets/admin_dashboard/service-category/ManageServiceCategory";
+import ServicesPage from "./componets/pages/services/ServicesPage";
 
 function App() {
   const location = useLocation();
@@ -38,7 +39,8 @@ function App() {
     "/TotalRegistration",
     "/ServiceCategory",
     "/ManageServiceCategory",
-    "/UserProfile"
+    "/UserProfile",
+    "/ServicesPage"
   ]);
 
   const shouldHideNavbar = hiddenPaths.has(location.pathname);
@@ -125,6 +127,14 @@ function App() {
             element={
               <Protected allowedRoles={['admin']}>
                 <ManageServiceCategory />
+              </Protected>
+            } 
+          />
+          <Route 
+            path="/ServicesPage" 
+            element={
+              <Protected allowedRoles={['admin']}>
+                <ServicesPage />
               </Protected>
             } 
           />
